@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="Simple_Player.MainPage"
+             BackgroundColor="#003262"
+             Shell.NavBarIsVisible="False">
+
+    <!-- Головний Grid, де елементи накладаються один на одного -->
+    <Grid>
+        <!-- 1. Відео на ВСЕ вікно -->
+        <toolkit:MediaElement x:Name="player"
+                              ShouldAutoPlay="False"
+                              ShouldShowPlaybackControls="False" 
+                              HorizontalOptions="FillAndExpand"
+                              VerticalOptions="FillAndExpand"
+                              Aspect="AspectFit"/>
+
+        <!-- 2. HUD Інтерфейс поверх відео (4 рядки: Заголовок, Простір, Плейліст, Кнопки) -->
+        <Grid x:Name="HudOverlay" Padding="20" RowSpacing="10" RowDefinitions="Auto, *, Auto, Auto" BackgroundColor="Transparent">
+
+            <!-- Щоб ловити рух мишки по всьому екрану -->
+            <Grid.GestureRecognizers>
+                <PointerGestureRecognizer PointerMoved="OnPointerMoved"/>
+            </Grid.GestureRecognizers>
+
+            <!-- РЯДОК 0: Кастомна бренд-панель (Аватарка + Назва програми) -->
+            <Grid Grid.Row="0" ColumnDefinitions="Auto, Auto" ColumnSpacing="10" VerticalOptions="Start" HorizontalOptions="Start" Margin="10, 5, 0, 0">
+                <Image Grid.Column="0" 
+                       Source="appicon.png" 
+                       WidthRequest="24" 
+                       HeightRequest="24" 
+                       VerticalOptions="Center"/>
+                <Label Grid.Column="1" 
+                       Text="There was supposed to be an Easter egg here, but I haven't come up with one yet." 
+                       FontSize="14" 
+                       FontAttributes="Bold" 
+                       TextColor="#003262" 
+                       VerticalOptions="Center"/>
+            </Grid>
+
+            <!-- РЯДОК 1: Прозорий простір поверх відео для мишки -->
+            <Grid Grid.Row="1" BackgroundColor="Transparent" />
+
+            <!-- РЯДОК 2: Плейліст -->
+            <CollectionView x:Name="playlistView" 
+                            Grid.Row="2" 
+                            MaximumHeightRequest="150" 
+                            MaximumWidthRequest="450"
+                            HorizontalOptions="Center"
+                            VerticalOptions="End"
+                            BackgroundColor="#CC222222"
+                            SelectionMode="Single"
+                            SelectionChanged="OnPlaylistSelectionChanged">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="*, 40" Padding="10, 5" VerticalOptions="Center">
+                            <Label Grid.Column="0" Text="{Binding}" TextColor="White" VerticalOptions="Center" LineBreakMode="TailTruncation"/>
+                            <Button Grid.Column="1" Text="❌" TextColor="Red" BackgroundColor="Transparent" Padding="0"
+                                    HeightRequest="30" WidthRequest="30" HorizontalOptions="Center" VerticalOptions="Center"
+                                    Clicked="OnRemoveFileClicked" CommandParameter="{Binding}"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- РЯДОК 3: Головна об'єднана панель керування (Збільшено висоту до 105 та ширину до 720) -->
+            <Border Grid.Row="3" 
+        HorizontalOptions="Center" 
+        BackgroundColor="#AA121212" 
+        StrokeThickness="0"
+        StrokeShape="RoundRectangle 12"
+        Padding="15, 12, 15, 12" 
+        HeightRequest="115"       
+        WidthRequest="720"       
+        Margin="0,0,0,10">
+
+                <Grid RowDefinitions="Auto, Auto" RowSpacing="10">
+
+                    <!-- ПОВЗУНОК ВІДЕО ЗВЕРХУ НА ВСЮ ШИРИНУ -->
+                    <Slider x:Name="timelineSlider" 
+                Grid.Row="0" 
+                Minimum="0" 
+                Maximum="1" 
+                ValueChanged="OnTimelineSliderValueChanged" 
+                VerticalOptions="Center" 
+                HorizontalOptions="FillAndExpand"
+                Margin="5,0"/>
+
+                    <!-- ПАНЕЛЬ КНОПОК, ЗВУКУ ТА ЧАСУ ЗНИЗУ (Розширено колонку для тексту плейліста) -->
+                    <Grid Grid.Row="1" ColumnDefinitions="Auto, Auto, Auto, Auto, 140, *, Auto, 10, Auto, 150" ColumnSpacing="10" VerticalOptions="Center">
+
+                        <!-- 1. Кнопка додавання файлів (➕) -->
+                        <Button Grid.Column="0" Text="➕" Clicked="OnOpenFileClicked" WidthRequest="38" HeightRequest="38" CornerRadius="8" BackgroundColor="#1F6AA5" TextColor="White" Padding="0"/>
+
+                        <!-- 2. Play (▶️) -->
+                        <Button Grid.Column="1" Text="▶️" Clicked="OnPlayClicked" WidthRequest="38" HeightRequest="38" CornerRadius="8" BackgroundColor="#1F6AA5" TextColor="White" Padding="0"/>
+
+                        <!-- 3. Pause (⏸️) -->
+                        <Button Grid.Column="2" Text="⏸️" Clicked="OnPauseClicked" WidthRequest="38" HeightRequest="38" CornerRadius="8" BackgroundColor="#1F6AA5" TextColor="White" Padding="0"/>
+
+                        <!-- 4. Stop (⏹️) -->
+                        <Button Grid.Column="3" Text="⏹️" Clicked="OnStopClicked" WidthRequest="38" HeightRequest="38" CornerRadius="8" BackgroundColor="#1F6AA5" TextColor="White" Padding="0"/>
+
+                        <!-- 5. Блок звуку (Іконка + Повзунок) -->
+                        <StackLayout Grid.Column="4" Orientation="Horizontal" Spacing="2" VerticalOptions="Center">
+                            <Button x:Name="btnMute" Text="🔊" Clicked="OnMuteClicked" WidthRequest="35" HeightRequest="35" CornerRadius="17" BackgroundColor="Transparent" TextColor="White" Padding="0"/>
+                            <Slider x:Name="volumeSlider" WidthRequest="90" Minimum="0" Maximum="1" Value="1" ValueChanged="OnVolumeSliderValueChanged" VerticalOptions="Center"/>
+                        </StackLayout>
+
+                        <!-- Порожня колонка-розділювач для автоматичного зсування часу праворуч -->
+                        <Grid Grid.Column="5" HorizontalOptions="FillAndExpand"/>
+
+                        <!-- 6. Поточний час -->
+                        <Grid Grid.Column="6" x:Name="CurrentTimeContainer" WidthRequest="42" HorizontalOptions="Center" VerticalOptions="Center"/>
+
+                        <!-- Розділювач часу -->
+                        <Label Grid.Column="7" Text="/" TextColor="Gray" VerticalOptions="Center" HorizontalOptions="Center"/>
+
+                        <!-- Загальний час -->
+                        <Grid Grid.Column="8" x:Name="TotalTimeContainer" WidthRequest="42" HorizontalOptions="Center" VerticalOptions="Center"/>
+
+                        <!-- 7. Кнопка Плейліста (Ширина 150 у колонці 9, щоб довгий текст з C# поміщався і не зрізався) -->
+                        <Button x:Name="btnTogglePlaylist" Grid.Column="9" Text="❌ Hide Playlist" Clicked="OnTogglePlaylistClicked" WidthRequest="145" HeightRequest="38" CornerRadius="8" BackgroundColor="#1F6AA5" TextColor="White" Padding="5,0" IsVisible="False"/>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</ContentPage>
