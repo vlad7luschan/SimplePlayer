@@ -27,7 +27,7 @@ namespace Simple_Player
                     if (appWindow != null)
                     {
                         // Залишаємо стандартну поведінку Title Bar
-                        appWindow.TitleBar.ExtendsContentIntoTitleBar = false;
+                        appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
                     }
                 }
             };
